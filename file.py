@@ -7,7 +7,7 @@ current_file_path = None
 
 def open_file(window, edit_text):
     global current_file_path
-    file_path = filedialog.askopenfilename()
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
         with open(file_path, 'r') as file:
             file_contents = file.read()
@@ -46,7 +46,8 @@ def save_file(window, edit_text):
 
 def save_file_as(window, edit_text):
     global current_file_path
-    file_path = filedialog.asksaveasfilename(defaultextension=".txt")
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
         current_file_path = file_path
         write_to_file(window, edit_text, file_path)
+
