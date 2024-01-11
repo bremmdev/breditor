@@ -7,7 +7,8 @@ current_file_path = None
 
 def open_file(window, edit_text):
     global current_file_path
-    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    file_path = filedialog.askopenfilename(
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
         with open(file_path, 'r') as file:
             file_contents = file.read()
@@ -15,6 +16,8 @@ def open_file(window, edit_text):
         # Delete the current text in the text field
         edit_text.delete(1.0, tk.END)
         edit_text.insert(1.0, file_contents)
+        # Set the cursor to the start of the text field
+        edit_text.mark_set("insert", "1.0")
 
         current_file_path = file_path
         file_name = file_path.split('/')[-1]
@@ -24,8 +27,8 @@ def open_file(window, edit_text):
 def new_file(window, edit_text):
     global current_file_path
     current_file_path = None
-    window.title('Untitled - breditor')
     edit_text.delete(1.0, tk.END)
+    window.title('Untitled - breditor')
 
 
 def write_to_file(window, edit_text, file_path):
@@ -46,8 +49,8 @@ def save_file(window, edit_text):
 
 def save_file_as(window, edit_text):
     global current_file_path
-    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[
+                                             ("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
         current_file_path = file_path
         write_to_file(window, edit_text, file_path)
-

@@ -1,17 +1,12 @@
 import tkinter as tk
-from widgets import create_topbar
+from interface import create_interface
 
 
 def main():
     window = tk.Tk()
     window.title('Untitled - breditor')
-
-    # create a text field
-    edit_text = tk.Text(window)
-    edit_text.pack(expand=True, fill=tk.BOTH)
-
-    create_topbar(window, edit_text)
-
+    window.minsize(500, 500)
+    create_interface(window)
     window.mainloop()
 
 
