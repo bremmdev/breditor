@@ -33,6 +33,18 @@ def create_topbar(window, edit_text):
     file_menu.add_command(
         label="Save As", command=lambda: save_file_as(window, edit_text), accelerator="Ctrl+Shift+S")
 
+    # Create a submenu for Edit
+    edit_menu = tk.Menu(topbar, tearoff=0)
+    edit_menu.configure(bg="ghost white", fg="black", font=("Calibri 10"))
+    topbar.add_cascade(label="Edit", menu=edit_menu)
+    edit_menu.add_command(label="Cut", command=lambda: edit_text.event_generate(
+        "<<Cut>>"), accelerator="Ctrl+X")
+    edit_menu.add_command(label="Copy", command=lambda: edit_text.event_generate(
+        "<<Copy>>"), accelerator="Ctrl+C")
+    edit_menu.add_command(label="Paste", command=lambda: edit_text.event_generate(
+        "<<Paste>>"), accelerator="Ctrl+V")
+
+    # Keyboard accerelator events bindings
     window.bind("<Control-n>", lambda event: new_file(window, edit_text))
     window.bind("<Control-o>", lambda event: open_file(window, edit_text))
     window.bind("<Control-s>", lambda event: save_file(window, edit_text))
@@ -59,7 +71,7 @@ def create_toolbar(window, edit_text):
     italic_button.pack(side=tk.LEFT)
 
     font_buttons = [bold_button, italic_button]
-    
+
     # Bind the <<Selection>> event to enable buttons
     edit_text.bind("<<Selection>>",
                    lambda event: on_selection(event, font_buttons))
