@@ -6,11 +6,27 @@ from font import make_bold, make_italic
 def create_interface(window):
     edit_text = tk.Text(window, pady=20, wrap=tk.WORD,
                         bg="ghost white", border=0, font=("Calibri 11"))
-    # Bind the <<Selection>> event to fire events on text selection
-    create_topbar(window, edit_text)
-    create_toolbar(window, edit_text)
+
+    topbar, edit_menu = create_topbar(window, edit_text)
+    toolbar = create_toolbar(window, edit_text)
+
     # pack edit_text after topbar and toolbar for correct position in window
     edit_text.pack(expand=True, fill=tk.BOTH)
+
+    # get font buttons from toolbar
+    font_buttons = toolbar.winfo_children()[0].winfo_children()
+
+    # Bind the <<Selection>> event to enable buttons
+    edit_text.bind("<<Selection>>",
+                   lambda event: on_selection(event, font_buttons, edit_menu))
+
+    # Check if left mouse button is released to check if there is a selection
+    edit_text.bind("<ButtonRelease-1>",
+                   lambda event: on_button_release(event, font_buttons, edit_menu))
+
+    edit_text.bind("<Control-b>", lambda event: make_bold(edit_text))
+    edit_text.bind("<Control-i>", lambda event: make_italic(edit_text))
+
     edit_text.focus_set()
 
 
@@ -38,9 +54,9 @@ def create_topbar(window, edit_text):
     edit_menu.configure(bg="ghost white", fg="black", font=("Calibri 10"))
     topbar.add_cascade(label="Edit", menu=edit_menu)
     edit_menu.add_command(label="Cut", command=lambda: edit_text.event_generate(
-        "<<Cut>>"), accelerator="Ctrl+X")
+        "<<Cut>>"), accelerator="Ctrl+X", state="disabled")
     edit_menu.add_command(label="Copy", command=lambda: edit_text.event_generate(
-        "<<Copy>>"), accelerator="Ctrl+C")
+        "<<Copy>>"), accelerator="Ctrl+C", state="disabled")
     edit_menu.add_command(label="Paste", command=lambda: edit_text.event_generate(
         "<<Paste>>"), accelerator="Ctrl+V")
 
@@ -49,6 +65,8 @@ def create_topbar(window, edit_text):
     window.bind("<Control-o>", lambda event: open_file(window, edit_text))
     window.bind("<Control-s>", lambda event: save_file(window, edit_text))
     window.bind("<Control-S>", lambda event: save_file_as(window, edit_text))
+
+    return topbar, edit_menu
 
 
 def create_toolbar(window, edit_text):
@@ -70,26 +88,17 @@ def create_toolbar(window, edit_text):
     italic_button.config(state="disabled")
     italic_button.pack(side=tk.LEFT)
 
-    font_buttons = [bold_button, italic_button]
-
-    # Bind the <<Selection>> event to enable buttons
-    edit_text.bind("<<Selection>>",
-                   lambda event: on_selection(event, font_buttons))
-
-    # Check if left mouse button is released to check if there is a selection
-    edit_text.bind("<ButtonRelease-1>",
-                   lambda event: on_button_release(event, font_buttons))
-
-    edit_text.bind("<Control-b>", lambda event: make_bold(edit_text))
-    edit_text.bind("<Control-i>", lambda event: make_italic(edit_text))
+    return toolbar
 
 
-def on_selection(event, font_buttons):
+def on_selection(event, font_buttons, edit_menu):
     for b in font_buttons:
         b.config(state=tk.NORMAL)
+    edit_menu.entryconfig("Cut", state="normal")
+    edit_menu.entryconfig("Copy", state="normal")
 
 
-def on_button_release(event, font_buttons):
+def on_button_release(event, font_buttons, edit_menu):
     """
     Event handler for the left mouse button release event.
 
@@ -99,11 +108,15 @@ def on_button_release(event, font_buttons):
     """
 
     try:
-        selected_text = event.widget.get("sel.first", "sel.last")
+        event.widget.get("sel.first", "sel.last")
         # If there is selected text, enable buttons
         for b in font_buttons:
             b.config(state=tk.NORMAL)
+            edit_menu.entryconfig("Cut", state="normal")
+            edit_menu.entryconfig("Copy", state="normal")
     except tk.TclError:
         # If there is no selected text, disable buttons
         for b in font_buttons:
             b.config(state=tk.DISABLED)
+            edit_menu.entryconfig("Cut", state="disabled")
+            edit_menu.entryconfig("Copy", state="disabled")
