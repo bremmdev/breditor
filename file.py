@@ -11,17 +11,24 @@ def open_file(window, edit_text):
     file_path = filedialog.askopenfilename(
         filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
+        # open the file in binary mode to check if it contains textual data
+        if not is_text_file(file_path):
+            return
+
         with open(file_path, 'r') as file:
             file_contents = file.read()
 
         # check if the file is a json file with text and tags according to the breditor format
         try:
             json_data = json.loads(file_contents)
-            file_contents = json_data["text"]
+            format = json_data.get('format', None)
+            if format != 'json/breditor':
+                raise KeyError("No valid format found")
+            file_contents = json_data["contents"]
             tags = json_data["tags"]
 
-        # if the file has no tags, it is a plain text file
-        except json.JSONDecodeError:
+        # if the file has no tags, it is a plain text file or a non breditor JSON file
+        except (json.JSONDecodeError, KeyError):
             tags = None
 
         # Delete the current text in the text field
@@ -62,7 +69,8 @@ def write_to_file(window, edit_text, file_path):
                 tags.append((tag, str(ranges[i]), str(ranges[i+1])))
 
     json_data = {
-        "text": data,
+        "format": "json/breditor",
+        "contents": data,
         "tags": tags
     }
 
@@ -92,3 +100,24 @@ def save_file_as(window, edit_text):
     if file_path:
         current_file_path = file_path
         write_to_file(window, edit_text, file_path)
+
+
+def is_text_file(file_path):
+    """
+    Check if a file contains textual data.
+
+    This function reads the first few bytes of the file and tries to decode them as UTF-8 text, returning either True or False.
+
+    Please note that this method is not foolproof. Some binary files may start with bytes that can be decoded as text,
+    and some text files may start with bytes that cannot be decoded as text. However, this method should work for most common cases.
+    """
+    # open the file in binary mode
+    with open(file_path, 'rb') as file:
+        # Read the first few bytes of the file
+        sample = file.read(100)
+
+    try:
+        sample.decode('utf-8')
+    except UnicodeDecodeError:
+        return False
+    return True
