@@ -8,6 +8,12 @@ current_file_path = None
 
 def open_file(window, edit_text):
     global current_file_path
+
+    # prompt the user to save changes if the text has been modified
+    chooses_to_save = prompt_save_changes(window, edit_text)
+    if chooses_to_save is True or chooses_to_save is None:
+        return
+
     file_path = filedialog.askopenfilename(
         filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
@@ -47,13 +53,20 @@ def open_file(window, edit_text):
         current_file_path = file_path
         file_name = file_path.split('/')[-1]
         window.title(f"{file_name} - breditor")
+        edit_text.edit_modified(False)
 
 
 def new_file(window, edit_text):
     global current_file_path
+    # prompt the user to save changes if the text has been modified
+    chooses_to_save = prompt_save_changes(window, edit_text)
+    if chooses_to_save is True or chooses_to_save is None:
+        return
+
     current_file_path = None
     edit_text.delete(1.0, tk.END)
     window.title('Untitled - breditor')
+    edit_text.edit_modified(False)
 
 
 def write_to_file(window, edit_text, file_path):
@@ -81,6 +94,8 @@ def write_to_file(window, edit_text, file_path):
         # if there are no tags, write the plain text to the file
         else:
             f.write(data)
+
+    edit_text.edit_modified(False)
     file_name = file_path.split('/')[-1]
     window.title(f"{file_name} - breditor")
 
@@ -100,6 +115,27 @@ def save_file_as(window, edit_text):
     if file_path:
         current_file_path = file_path
         write_to_file(window, edit_text, file_path)
+
+
+def prompt_save_changes(window, edit_text):
+    """
+    Prompt the user to save changes if the text has been modified.
+
+    This function checks if the text in the provided Text widget has been modified and prompts the user to save the changes if it has.
+
+    Returns:
+        bool: True if the user chooses to save the changes, False if the user chooses not to save the changes, and None if the user cancels the operation.
+    """
+    text_modified = edit_text.edit_modified()
+    if text_modified:
+        save_prompt = tk.messagebox.askyesnocancel(
+            "Save changes?", "Do you want to save the changes to the current file?")
+        if save_prompt is None:
+            return
+        if save_prompt:
+            save_file(window, edit_text)
+            return True
+    return False
 
 
 def is_text_file(file_path):

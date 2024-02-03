@@ -1,6 +1,7 @@
 import tkinter as tk
 from file import open_file, new_file, save_file, save_file_as
 from font import make_bold, make_italic
+from file import prompt_save_changes
 
 
 def create_interface(window):
@@ -24,10 +25,17 @@ def create_interface(window):
     edit_text.bind("<ButtonRelease-1>",
                    lambda event: on_button_release(event, font_buttons, edit_menu))
 
+    edit_text.bind("<<Modified>>", lambda event: text_modified.set(True))
+
     edit_text.bind("<Control-b>", lambda event: make_bold(edit_text))
     edit_text.bind("<Control-i>", lambda event: make_italic(edit_text))
 
+    text_modified = tk.BooleanVar(value=False)
     edit_text.focus_set()
+
+    # Bind the window close event to the on_close_window function to prompt the user to save changes
+    window.protocol("WM_DELETE_WINDOW",
+                    lambda: on_close_window(window, edit_text))
 
 
 def create_topbar(window, edit_text):
@@ -120,3 +128,15 @@ def on_button_release(event, font_buttons, edit_menu):
             b.config(state=tk.DISABLED)
             edit_menu.entryconfig("Cut", state="disabled")
             edit_menu.entryconfig("Copy", state="disabled")
+
+
+def on_close_window(window, edit_text):
+    if edit_text.edit_modified():
+        # Prompt the user to save the file
+        chooses_to_save = prompt_save_changes(window, edit_text)
+        if chooses_to_save is True or chooses_to_save is None:
+            return
+        else:
+            window.destroy()
+    else:
+        window.destroy()
