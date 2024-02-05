@@ -44,7 +44,6 @@ def open_file(window, edit_text):
         # Apply the tags to the text and configure the tags, if they exist
         if tags:
             for tag in tags:
-                edit_text.tag_configure(tag[0], font=(f"Calibri 11 {tag[0]}"))
                 edit_text.tag_add(tag[0], tag[1], tag[2])
 
         # Set the cursor to the start of the text field

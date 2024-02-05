@@ -1,7 +1,8 @@
 import tkinter as tk
 from file import open_file, new_file, save_file, save_file_as
-from font import make_bold, make_italic
+from font import make_bold, make_italic, set_heading
 from file import prompt_save_changes
+from font import configure_styles
 
 
 def create_interface(window):
@@ -14,16 +15,21 @@ def create_interface(window):
     # pack edit_text after topbar and toolbar for correct position in window
     edit_text.pack(expand=True, fill=tk.BOTH)
 
-    # get font buttons from toolbar
+    # get buttons from toolbar
     font_buttons = toolbar.winfo_children()[0].winfo_children()
+    headings_buttons = toolbar.winfo_children()[1].winfo_children()
+    all_buttons = font_buttons + headings_buttons
+
+    # Configure the styles for the text widget
+    configure_styles(edit_text)
 
     # Bind the <<Selection>> event to enable buttons
     edit_text.bind("<<Selection>>",
-                   lambda event: on_selection(event, font_buttons, edit_menu))
+                   lambda event: on_selection(event, all_buttons, edit_menu))
 
     # Check if left mouse button is released to check if there is a selection
     edit_text.bind("<ButtonRelease-1>",
-                   lambda event: on_button_release(event, font_buttons, edit_menu))
+                   lambda event: on_button_release(event, all_buttons, edit_menu))
 
     edit_text.bind("<<Modified>>", lambda event: text_modified.set(True))
 
@@ -77,6 +83,14 @@ def create_topbar(window, edit_text):
     return topbar, edit_menu
 
 
+def create_button(parent, text, font, command):
+    button = tk.Button(parent, text=text, width=2, font=font,
+                       command=command, bg="ghost white")
+    button.config(state="disabled")
+    button.pack(side=tk.LEFT)
+    return button
+
+
 def create_toolbar(window, edit_text):
     # Create a toolbar
     toolbar = tk.Frame(window, bg="gray20", height=30, pady=8)
@@ -85,28 +99,33 @@ def create_toolbar(window, edit_text):
     font_options_bar = tk.Frame(toolbar, bg="gray20", padx=8)
     font_options_bar.pack(side=tk.LEFT, expand=False, fill=tk.X)
 
-    # Create font buttons
-    bold_button = tk.Button(font_options_bar, text="B", width=2, font=(
-        "Calibri 11 bold"), command=lambda: make_bold(edit_text), bg="ghost white")
-    bold_button.config(state="disabled")
-    bold_button.pack(side=tk.LEFT)
+    headings_options_bar = tk.Frame(toolbar, bg="gray20", padx=8)
+    headings_options_bar.pack(side=tk.LEFT, expand=False, fill=tk.X)
 
-    italic_button = tk.Button(font_options_bar, text="I", width=2, font=(
-        "Calibri 11 italic"), command=lambda: make_italic(edit_text),  bg="ghost white")
-    italic_button.config(state="disabled")
-    italic_button.pack(side=tk.LEFT)
+    # Create font buttons
+    bold_button = create_button(
+        font_options_bar, "B", ("Calibri 11 bold"), lambda: make_bold(edit_text))
+    italic_button = create_button(font_options_bar, "I", ("Calibri 11 italic"), lambda: make_italic(edit_text))\
+
+    # Create headings buttons
+    h1_button = create_button(headings_options_bar,
+                              "H1", ("Calibri 11 bold"), lambda: set_heading(edit_text, "h1"))
+    h2_button = create_button(headings_options_bar,
+                              "H2", ("Calibri 11 bold"), lambda: set_heading(edit_text, "h2"))
+    h3_button = create_button(headings_options_bar,
+                              "H3", ("Calibri 11 bold"), lambda: set_heading(edit_text, "h3"))
 
     return toolbar
 
 
-def on_selection(event, font_buttons, edit_menu):
-    for b in font_buttons:
+def on_selection(event, buttons, edit_menu):
+    for b in buttons:
         b.config(state=tk.NORMAL)
     edit_menu.entryconfig("Cut", state="normal")
     edit_menu.entryconfig("Copy", state="normal")
 
 
-def on_button_release(event, font_buttons, edit_menu):
+def on_button_release(event, buttons, edit_menu):
     """
     Event handler for the left mouse button release event.
 
@@ -118,13 +137,13 @@ def on_button_release(event, font_buttons, edit_menu):
     try:
         event.widget.get("sel.first", "sel.last")
         # If there is selected text, enable buttons
-        for b in font_buttons:
+        for b in buttons:
             b.config(state=tk.NORMAL)
             edit_menu.entryconfig("Cut", state="normal")
             edit_menu.entryconfig("Copy", state="normal")
     except tk.TclError:
         # If there is no selected text, disable buttons
-        for b in font_buttons:
+        for b in buttons:
             b.config(state=tk.DISABLED)
             edit_menu.entryconfig("Cut", state="disabled")
             edit_menu.entryconfig("Copy", state="disabled")
