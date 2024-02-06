@@ -1,8 +1,6 @@
 import tkinter as tk
-from file import open_file, new_file, save_file, save_file_as
-from font import make_bold, make_italic, set_heading
-from file import prompt_save_changes
-from font import configure_styles
+from file import open_file, new_file, save_file, save_file_as, prompt_save_changes, get_recent_files
+from font import make_bold, make_italic, set_heading, configure_styles
 
 
 def create_interface(window):
@@ -58,10 +56,23 @@ def create_topbar(window, edit_text):
         label="New", command=lambda: new_file(window, edit_text), accelerator="Ctrl+N")
     file_menu.add_command(
         label="Open", command=lambda: open_file(window, edit_text), accelerator="Ctrl+O")
+    file_menu.add_cascade(
+        label="Open Recent File", menu=tk.Menu(file_menu))
+    file_menu.add_separator()
     file_menu.add_command(
         label="Save", command=lambda: save_file(window, edit_text), accelerator="Ctrl+S")
     file_menu.add_command(
         label="Save As", command=lambda: save_file_as(window, edit_text), accelerator="Ctrl+Shift+S")
+
+    # Get the recent files and add them to the recent files menu
+    recent_files_menu = window.nametowidget('!menu.!menu.!menu')
+    recent_files_menu.configure(
+        bg="ghost white", fg="black", font=("Calibri 10"), tearoff=0)
+
+    recent_files = get_recent_files()
+    for file_path in recent_files:
+        recent_files_menu.add_command(
+            label=file_path, command=lambda path=file_path: open_file(window, edit_text, path))
 
     # Create a submenu for Edit
     edit_menu = tk.Menu(topbar, tearoff=0)
@@ -105,7 +116,8 @@ def create_toolbar(window, edit_text):
     # Create font buttons
     bold_button = create_button(
         font_options_bar, "B", ("Calibri 11 bold"), lambda: make_bold(edit_text))
-    italic_button = create_button(font_options_bar, "I", ("Calibri 11 italic"), lambda: make_italic(edit_text))\
+    italic_button = create_button(
+        font_options_bar, "I", ("Calibri 11 italic"), lambda: make_italic(edit_text))
 
     # Create headings buttons
     h1_button = create_button(headings_options_bar,

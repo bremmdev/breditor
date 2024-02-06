@@ -4,9 +4,10 @@ import json
 
 # Global variable to store the current file's path
 current_file_path = None
+recent_files = []
 
 
-def open_file(window, edit_text):
+def open_file(window, edit_text, file_path=None):
     global current_file_path
 
     # prompt the user to save changes if the text has been modified
@@ -14,8 +15,10 @@ def open_file(window, edit_text):
     if chooses_to_save is True or chooses_to_save is None:
         return
 
-    file_path = filedialog.askopenfilename(
-        filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    if file_path is None:
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+
     if file_path:
         # open the file in binary mode to check if it contains textual data
         if not is_text_file(file_path):
@@ -50,6 +53,9 @@ def open_file(window, edit_text):
         edit_text.mark_set("insert", "1.0")
 
         current_file_path = file_path
+
+        # Add the file to the recent files list
+        add_recent_file(window, file_path)
         file_name = file_path.split('/')[-1]
         window.title(f"{file_name} - breditor")
         edit_text.edit_modified(False)
@@ -114,6 +120,7 @@ def save_file_as(window, edit_text):
     if file_path:
         current_file_path = file_path
         write_to_file(window, edit_text, file_path)
+        add_recent_file(window, file_path)
 
 
 def prompt_save_changes(window, edit_text):
@@ -156,3 +163,40 @@ def is_text_file(file_path):
     except UnicodeDecodeError:
         return False
     return True
+
+
+def get_recent_files():
+    global recent_files
+
+    try:
+        with open('recent.json', 'r') as file:
+            file_contents = file.read()
+        json_data = json.loads(file_contents)
+        recent_files = json_data["recent_files"]
+    except (json.JSONDecodeError, KeyError) as e:
+        print(e)
+        recent_files = []
+
+    return recent_files
+
+
+def add_recent_file(window, file_path):
+    global recent_files
+    if file_path in recent_files:
+        recent_files.remove(file_path)
+    recent_files.insert(0, file_path)
+    if len(recent_files) > 5:
+        recent_files.pop()
+
+    with open('recent.json', 'w') as file:
+        json.dump({"recent_files": recent_files}, file)
+
+    # nametowidget is used to get the widget by its name, which is the path to the widget
+    edit_text = window.nametowidget('!text')
+    recent_files_menu = window.nametowidget('!menu.!menu.!menu')
+    recent_files_menu.delete(0, tk.END)
+    for file_path in recent_files:
+        recent_files_menu.add_command(
+            label=file_path, command=lambda path=file_path: open_file(window, edit_text, path))
+
+    return recent_files
