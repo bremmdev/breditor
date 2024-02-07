@@ -21,8 +21,12 @@ def open_file(window, edit_text, file_path=None):
 
     if file_path:
         # open the file in binary mode to check if it contains textual data
-        if not is_text_file(file_path):
-            return
+        try:
+            if not is_text_file(file_path):
+                tk.messagebox.showerror(title="Invalid file type", message="Cannot open file. Breditor only supports text files.", icon="info")
+                return
+        except FileNotFoundError:
+            return tk.messagebox.showerror(title="File not found", message="The file could not be found.", icon="info")
 
         with open(file_path, 'r') as file:
             file_contents = file.read()
@@ -154,12 +158,13 @@ def is_text_file(file_path):
     and some text files may start with bytes that cannot be decoded as text. However, this method should work for most common cases.
     """
     # open the file in binary mode
-    with open(file_path, 'rb') as file:
-        # Read the first few bytes of the file
-        sample = file.read(100)
-
     try:
-        sample.decode('utf-8')
+        with open(file_path, 'rb') as file:
+        # Read the first few bytes of the file
+            sample = file.read(100)
+            sample.decode('utf-8')
+    except FileNotFoundError:
+        raise FileNotFoundError
     except UnicodeDecodeError:
         return False
     return True
