@@ -63,6 +63,8 @@ def create_topbar(window, edit_text):
         label="Save", command=lambda: save_file(window, edit_text), accelerator="Ctrl+S")
     file_menu.add_command(
         label="Save As", command=lambda: save_file_as(window, edit_text), accelerator="Ctrl+Shift+S")
+    file_menu.add_separator()
+    file_menu.add_command(label="Exit", command=lambda: on_close_window(window, edit_text))
 
     # Get the recent files and add them to the recent files menu
     recent_files_menu = window.nametowidget('!menu.!menu.!menu')
@@ -165,7 +167,7 @@ def on_close_window(window, edit_text):
     if edit_text.edit_modified():
         # Prompt the user to save the file
         chooses_to_save = prompt_save_changes(window, edit_text)
-        if chooses_to_save is True or chooses_to_save is None:
+        if chooses_to_save is None:
             return
         else:
             window.destroy()

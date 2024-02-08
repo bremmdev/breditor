@@ -12,7 +12,7 @@ def open_file(window, edit_text, file_path=None):
 
     # prompt the user to save changes if the text has been modified
     chooses_to_save = prompt_save_changes(window, edit_text)
-    if chooses_to_save is True or chooses_to_save is None:
+    if  chooses_to_save is None:
         return
 
     if file_path is None:
@@ -69,7 +69,7 @@ def new_file(window, edit_text):
     global current_file_path
     # prompt the user to save changes if the text has been modified
     chooses_to_save = prompt_save_changes(window, edit_text)
-    if chooses_to_save is True or chooses_to_save is None:
+    if chooses_to_save is None:
         return
 
     current_file_path = None
