@@ -84,7 +84,7 @@ def write_to_file(window, edit_text, file_path):
     # collect all the tags applied to the text and their positions
     tags = []
     for tag in edit_text.tag_names():
-        if tag != "sel":
+        if tag != "sel" and tag != "found":
             ranges = edit_text.tag_ranges(tag)
             for i in range(0, len(ranges), 2):
                 # create a list of tuples with the tag name, start and end position of the tag

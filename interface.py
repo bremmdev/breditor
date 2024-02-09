@@ -1,6 +1,7 @@
 import tkinter as tk
 from file import open_file, new_file, save_file, save_file_as, prompt_save_changes, get_recent_files
 from font import make_bold, make_italic, set_heading, configure_styles
+from find_replace import FindDialog
 
 
 def create_interface(window):
@@ -64,7 +65,8 @@ def create_topbar(window, edit_text):
     file_menu.add_command(
         label="Save As", command=lambda: save_file_as(window, edit_text), accelerator="Ctrl+Shift+S")
     file_menu.add_separator()
-    file_menu.add_command(label="Exit", command=lambda: on_close_window(window, edit_text))
+    file_menu.add_command(
+        label="Exit", command=lambda: on_close_window(window, edit_text))
 
     # Get the recent files and add them to the recent files menu
     recent_files_menu = window.nametowidget('!menu.!menu.!menu')
@@ -86,12 +88,19 @@ def create_topbar(window, edit_text):
         "<<Copy>>"), accelerator="Ctrl+C", state="disabled")
     edit_menu.add_command(label="Paste", command=lambda: edit_text.event_generate(
         "<<Paste>>"), accelerator="Ctrl+V")
+    edit_menu.add_separator()
+    edit_menu.add_command(label="Find", command=lambda: FindDialog(
+        window, edit_text), accelerator="Ctrl+F")
+    edit_menu.add_command(label="Replace", command=lambda: FindDialog(
+        window, edit_text, replace=True), accelerator="Ctrl+H")
 
     # Keyboard accerelator events bindings
     window.bind("<Control-n>", lambda event: new_file(window, edit_text))
     window.bind("<Control-o>", lambda event: open_file(window, edit_text))
     window.bind("<Control-s>", lambda event: save_file(window, edit_text))
     window.bind("<Control-S>", lambda event: save_file_as(window, edit_text))
+    window.bind("<Control-f>", lambda event: FindDialog(window, edit_text))
+    window.bind("<Control-h>", lambda event: FindDialog(window, edit_text, replace=True))
 
     return topbar, edit_menu
 
