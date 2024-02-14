@@ -6,6 +6,9 @@ def set_style(edit_text, font_style):
     if heading_tag:
         edit_text.tag_remove(heading_tag[0], "sel.first", "sel.last")
 
+    if (edit_text.edit_modified() == False):
+        edit_text.edit_modified(True)
+
     # if there are no bold, italic or bold italic tags, add the tag
     style_tags = ["bold", "italic", "bold italic"]
     has_style_tag = any(tag in current_tags for tag in style_tags)
@@ -67,6 +70,8 @@ def set_heading(edit_text, heading):
             edit_text.tag_remove(tag, "sel.first", "sel.last")
 
     edit_text.tag_add(f"heading-{heading}", "sel.first", "sel.last")
+    if (edit_text.edit_modified() == False):
+        edit_text.edit_modified(True)
 
 
 def configure_styles(edit_text):
