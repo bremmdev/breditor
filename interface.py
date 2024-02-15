@@ -1,18 +1,24 @@
 import tkinter as tk
 from file import open_file, new_file, save_file, save_file_as, prompt_save_changes, get_recent_files
-from font import make_bold, make_italic, set_heading, configure_styles
+from formatting import make_bold, make_italic, set_heading, configure_styles
 from find_replace import FindDialog
 
 
 def create_interface(window):
-    edit_text = tk.Text(window, pady=20, wrap=tk.WORD,
-                        bg="ghost white", border=0, font=("Calibri 11"))
+    # create the scrollbar and text widget but don't pack them yet
+    scrollbar = tk.Scrollbar(window)
+    edit_text = tk.Text(window, wrap=tk.WORD,
+                        bg="ghost white", border=0, font=("Calibri 11"), yscrollcommand=scrollbar.set)
 
     topbar, edit_menu = create_topbar(window, edit_text)
     toolbar = create_toolbar(window, edit_text)
 
-    # pack edit_text after topbar and toolbar for correct position in window
+    # pack edit_text and scrollbar after topbar and toolbar for correct position in window
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     edit_text.pack(expand=True, fill=tk.BOTH)
+
+    # Configure the Scrollbar to scroll the Text widget
+    scrollbar.config(command=edit_text.yview)
 
     # get buttons from toolbar
     font_buttons = toolbar.winfo_children()[0].winfo_children()
@@ -30,12 +36,11 @@ def create_interface(window):
     edit_text.bind("<ButtonRelease-1>",
                    lambda event: on_button_release(event, all_buttons, edit_menu))
 
-    edit_text.bind("<<Modified>>", lambda event: text_modified.set(True))
+    edit_text.bind("<<Modified>>", lambda event: edit_text.edit_modified(True))
 
     edit_text.bind("<Control-b>", lambda event: make_bold(edit_text))
     edit_text.bind("<Control-i>", lambda event: make_italic(edit_text))
 
-    text_modified = tk.BooleanVar(value=False)
     edit_text.focus_set()
 
     # Bind the window close event to the on_close_window function to prompt the user to save changes
@@ -100,7 +105,8 @@ def create_topbar(window, edit_text):
     window.bind("<Control-s>", lambda event: save_file(window, edit_text))
     window.bind("<Control-S>", lambda event: save_file_as(window, edit_text))
     window.bind("<Control-f>", lambda event: FindDialog(window, edit_text))
-    window.bind("<Control-h>", lambda event: FindDialog(window, edit_text, replace=True))
+    window.bind("<Control-h>", lambda event: FindDialog(window,
+                edit_text, replace=True))
 
     return topbar, edit_menu
 
